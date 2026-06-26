@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="./assets/cover.webp" alt="@pauldvlp/vp-templates" width="100%" />
+</p>
+
 # @pauldvlp/vp-templates
 
 Monorepo of [Vite+](https://viteplus.dev) templates and generators published by `@pauldvlp`, all in
