@@ -1,6 +1,6 @@
 {
   "name": "@pauldvlp/create",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "pauldvlp's Vite+ project templates, usable via `vp create @pauldvlp`.",
   "type": "module",
   "keywords": [
