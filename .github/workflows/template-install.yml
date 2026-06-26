@@ -1,0 +1,50 @@
+name: Template install smoke
+
+# Catches dependency drift/breakage in the SHIPPED templates — versions that live in
+# template/**/package.json, the template's `catalog:`, and src/template.ts's ICON_LIBS map, which
+# standard tooling (Renovate/pnpm outdated) doesn't see. The generated project has no lockfile and
+# uses version ranges, so a fresh `pnpm install` pulls the newest matching release: the weekly run
+# turns "a dependency published a breaking version inside an allowed range" into a failed check.
+
+on:
+  schedule:
+    # Mondays 06:00 UTC — weekly drift sweep against the live npm registry.
+    - cron: '0 6 * * 1'
+  pull_request:
+    paths:
+      - 'packages/*/template/**'
+      - 'packages/*/src/**'
+      - 'scripts/smoke-install.mjs'
+      - 'package.json'
+  workflow_dispatch:
+    inputs:
+      full:
+        description: 'Also run shadcn init/add + build (slower, hits shadcn registries)'
+        type: boolean
+        default: false
+
+concurrency:
+  group: template-install-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  install-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.9.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      # Root install gives the generator its build/runtime deps (bingo, zod) so produce() can run.
+      - run: pnpm install --frozen-lockfile
+
+      # PRs/schedule run the dependency-resolution gate. Manual runs can opt into the full path.
+      - run: pnpm smoke:install ${{ (github.event_name == 'workflow_dispatch' && inputs.full) && '--full' || '' }}

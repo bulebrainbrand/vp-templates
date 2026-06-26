@@ -3,6 +3,7 @@ dist
 .artifacts
 .verdaccio
 .smoke
+.smoke-install
 *.log
 *.tgz
 .DS_Store

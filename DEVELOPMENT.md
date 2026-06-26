@@ -29,6 +29,20 @@ node packages/vp-react-ts-shadcn/dist/index.js \
   --directory /tmp/demo --name demo --scope @demo --base base --preset vega
 ```
 
+### 1b. Real-install smoke — `pnpm smoke:install` (catches broken dep bumps)
+
+`pnpm smoke` only asserts the in-memory file tree; it never installs, so a bad version in
+`template/**/package.json`, the template's `catalog:`, or `src/template.ts`'s `ICON_LIBS` map slips
+through. `pnpm smoke:install` scaffolds to disk and runs the generator's post-scaffold `pnpm install`
+against the real npm registry — the generated project has no lockfile and uses version *ranges*, so a
+fresh install pulls the newest matching release and fails if it's incompatible. Run it on a schedule
+to notice when a dependency ships a breaking version inside an allowed range.
+
+```bash
+pnpm smoke:install         # scaffold + `pnpm install` (dependency-resolution gate)
+pnpm smoke:install --full  # also run shadcn init/add + `pnpm run ready` (build/typecheck)
+```
+
 ### 2. Full `vp create` against a local registry (Verdaccio)
 
 This reproduces the real published experience — `vp create @pauldvlp:...` resolving the manifest and
