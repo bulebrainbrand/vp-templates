@@ -1,0 +1,58 @@
+name: Release
+
+# Changesets-driven release that creates git tags + GitHub Releases only — it never publishes to a
+# package registry (no npm/2FA involved).
+#
+# Flow:
+#   1. Land changesets on `main` (via PRs). This workflow opens/updates a "Version Packages" PR that
+#      applies them: bumps versions and rewrites each package's CHANGELOG.
+#   2. Merge that PR. With no changesets left, the workflow runs `changeset tag`, which creates a git
+#      tag per public package at its current version; the action pushes those tags and opens a GitHub
+#      Release for each, with notes taken from the package's CHANGELOG entry.
+#
+# (template-kit is `private`, so it is never tagged or released.)
+
+on:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write # push the Version PR branch, create + push tags, create GitHub Releases
+  pull-requests: write # open/update the "Version Packages" PR
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0 # full history + tags so Changesets can diff and tag
+
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 11.9.0
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # Gate: don't tag/release a broken tree.
+      - run: pnpm smoke
+
+      - uses: changesets/action@v1
+        with:
+          version: pnpm exec changeset version
+          # No registry publish: just create the git tags for the current versions. The action pushes
+          # them and creates a GitHub Release per tag from the CHANGELOGs.
+          publish: pnpm exec changeset tag
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
