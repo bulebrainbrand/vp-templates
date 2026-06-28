@@ -107,6 +107,12 @@ come from Verdaccio; React, shadcn, fonts, etc. still come from the real npm reg
 
 > Re-publishing the same version to Verdaccio is rejected, just like npm. While iterating, either wipe
 > local storage (`rm -rf .verdaccio/storage`) or bump the version (see below) before `pnpm publish:local`.
+>
+> **Shortcut:** with the registry running, `pnpm relocal` does the whole reset in one shot — it wipes
+> the `@pauldvlp` packages from Verdaccio storage *and* the consumer-side caches that make `vp create`
+> reuse a stale copy (`pnpm dlx`, registry metadata, the store links, vp's resolve cache), then rebuilds
+> and republishes every package. Use it so you can re-test the **same** version after each edit without
+> bumping. (Override the registry with `VP_LOCAL_REGISTRY=http://host:port pnpm relocal`.)
 
 ## Versioning & changelogs (Changesets)
 
@@ -149,7 +155,8 @@ A typical loop: edit → `pnpm changeset` → commit → when ready, `pnpm versi
 2. Add an entry to `packages/create/package.json` → `createConfig.templates`:
    `{ "name": "vp-<x>", "description": "...", "template": "@pauldvlp/vp-<x>", "monorepo": true | omit }`
    — `monorepo: true` for new-project scaffolds; omit for "add into an existing repo" generators.
-3. Add a smoke case in `scripts/smoke.mjs`.
+3. Add a smoke case in `scripts/smoke.mjs` (assert the emitted tree + per-option wiring), and one in
+   `scripts/smoke-install.mjs` (so a real `pnpm install` of the scaffold is exercised).
 4. `pnpm changeset` (new package = `minor`/`major`).
 
 See the [root README](./README.md) for the naming convention.

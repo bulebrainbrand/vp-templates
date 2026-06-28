@@ -18,6 +18,7 @@
     "smoke:install": "node scripts/smoke-install.mjs",
     "registry": "verdaccio --config verdaccio.yaml --listen 4873",
     "publish:local": "pnpm -r run build && pnpm -r publish --registry http://localhost:4873 --no-git-checks",
+    "relocal": "node scripts/relocal.mjs",
     "changeset": "changeset",
     "version": "changeset version",
     "release": "pnpm -r run build && changeset publish"

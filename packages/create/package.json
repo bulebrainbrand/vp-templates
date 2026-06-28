@@ -26,6 +26,12 @@
         "monorepo": true
       },
       {
+        "name": "vp-react-ts-nestjs",
+        "description": "Vite+ monorepo — React web app + NestJS api (conformed to Vite+) sharing Zod contracts",
+        "template": "@pauldvlp/vp-react-ts-nestjs",
+        "monorepo": true
+      },
+      {
         "name": "vp-pkg-shadcn",
         "description": "Add a shared shadcn UI package (packages/ui) into an existing monorepo (themeable via shadcn presets)",
         "template": "@pauldvlp/vp-pkg-shadcn"

@@ -243,6 +243,28 @@ importers:
         specifier: ^5
         version: 5.9.3
 
+  packages/vp-react-ts-nestjs:
+    dependencies:
+      bingo:
+        specifier: ^0.9.3
+        version: 0.9.3
+      zod:
+        specifier: ^3.25.76
+        version: 3.25.76
+    devDependencies:
+      '@pauldvlp/template-kit':
+        specifier: workspace:*
+        version: link:../template-kit
+      '@types/node':
+        specifier: ^24
+        version: 24.13.2
+      esbuild:
+        specifier: ^0.25.0
+        version: 0.25.12
+      typescript:
+        specifier: ^5
+        version: 5.9.3
+
   packages/vp-react-ts-shadcn:
     dependencies:
       bingo:

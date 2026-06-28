@@ -26,6 +26,7 @@ packages/
 ├── create/                 → @pauldvlp/create              the org manifest (createConfig.templates)
 ├── template-kit/           → @pauldvlp/template-kit        private shared helpers (bundled into each generator)
 ├── vp-react-ts-shadcn/     → @pauldvlp/vp-react-ts-shadcn  Bingo generator: website app + shadcn ui
+├── vp-react-ts-nestjs/     → @pauldvlp/vp-react-ts-nestjs  Bingo generator: React web app + NestJS api + Zod contracts
 └── vp-pkg-shadcn/          → @pauldvlp/vp-pkg-shadcn       Bingo generator: add packages/ui into an existing repo
 ```
 

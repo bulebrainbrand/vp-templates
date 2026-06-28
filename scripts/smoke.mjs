@@ -14,6 +14,58 @@ const OUT = path.join(ROOT, '.smoke')
 
 const cases = [
   {
+    pkg: 'vp-react-ts-nestjs',
+    options: { name: 'acme', scope: '@acme', apiPort: '4000', webPort: '4100', swagger: false, serveWeb: false, docker: false, install: true },
+    expect(files) {
+      assert.equal(JSON.parse(files['package.json']).name, 'acme', 'root package name')
+      assert.equal(JSON.parse(files.apps.api['package.json']).name, '@acme/api', 'api package name')
+      assert.equal(JSON.parse(files.apps.web['package.json']).name, '@acme/web', 'web package name')
+      assert.equal(JSON.parse(files.packages.contracts['package.json']).name, '@acme/contracts', 'contracts package name')
+      // scope rewrite reaches source imports on both ends
+      assert.match(files.apps.api.src.items['items.controller.ts'], /@acme\/contracts/, 'api imports scoped contracts')
+      assert.match(files.apps.web.src['App.tsx'], /@acme\/contracts/, 'web imports scoped contracts')
+      // port substitution
+      assert.match(files.apps.web['vite.config.ts'], /localhost:4000/, 'web proxies to apiPort')
+      assert.match(files.apps.web['vite.config.ts'], /port: 4100/, 'web dev server uses webPort')
+      assert.match(files.apps.api.src.config['env.ts'], /default\(4000\)/, 'api PORT default uses apiPort')
+      // pino middleware uses the Express-5-safe named wildcard (no path-to-regexp warning)
+      assert.match(files.apps.api.src['app.module.ts'], /forRoutes: \['\*path'\]/, 'pino forRoutes uses *path')
+      // swagger off: markers stripped, dep absent
+      assert.doesNotMatch(files.apps.api.src['main.ts'], /__SWAGGER/, 'swagger markers stripped when off')
+      assert.doesNotMatch(files.apps.api.src['main.ts'], /SwaggerModule/, 'no swagger code when off')
+      assert.ok(!JSON.parse(files.apps.api['package.json']).dependencies['@nestjs/swagger'], 'no swagger dep when off')
+      // serveWeb off: markers stripped, dep absent
+      assert.doesNotMatch(files.apps.api.src['app.module.ts'], /__SERVEWEB/, 'serveWeb markers stripped when off')
+      assert.doesNotMatch(files.apps.api.src['app.module.ts'], /ServeStaticModule/, 'no ServeStatic when off')
+      assert.ok(!JSON.parse(files.apps.api['package.json']).dependencies['@nestjs/serve-static'], 'no serve-static dep when off')
+      // docker off: no Dockerfile, no root .dockerignore
+      assert.ok(!files.apps.api['Dockerfile'], 'no Dockerfile when docker off')
+      assert.ok(!files['.dockerignore'], 'no root .dockerignore when docker off')
+      // dotfiles renamed for publish-safety
+      assert.ok(files.apps.api['.env.example'], '_env.example renamed to .env.example')
+    }
+  },
+  {
+    pkg: 'vp-react-ts-nestjs',
+    options: { name: 'acme', scope: '@acme', apiPort: '3000', webPort: '5173', swagger: true, serveWeb: true, docker: true, install: true },
+    expect(files) {
+      // swagger on: markers replaced with real wiring (with docs.json), dep added
+      assert.match(files.apps.api.src['main.ts'], /SwaggerModule\.setup\('docs'/, 'swagger setup wired when on')
+      assert.match(files.apps.api.src['main.ts'], /jsonDocumentUrl: 'docs\.json'/, 'OpenAPI JSON served at docs.json')
+      assert.doesNotMatch(files.apps.api.src['main.ts'], /__SWAGGER/, 'no leftover swagger markers when on')
+      assert.ok(JSON.parse(files.apps.api['package.json']).dependencies['@nestjs/swagger'], 'swagger dep added when on')
+      // serveWeb on: ServeStaticModule wired, imports added, dep added
+      assert.match(files.apps.api.src['app.module.ts'], /ServeStaticModule\.forRoot/, 'ServeStatic wired when on')
+      assert.match(files.apps.api.src['app.module.ts'], /from 'node:path'/, 'join import added when on')
+      assert.match(files.apps.api.src['app.module.ts'], /from '@nestjs\/serve-static'/, 'serve-static import added when on')
+      assert.doesNotMatch(files.apps.api.src['app.module.ts'], /__SERVEWEB/, 'no leftover serveWeb markers when on')
+      assert.ok(JSON.parse(files.apps.api['package.json']).dependencies['@nestjs/serve-static'], 'serve-static dep added when on')
+      // docker on: Dockerfile + root .dockerignore emitted
+      assert.ok(files.apps.api['Dockerfile'], 'Dockerfile emitted when docker on')
+      assert.ok(files['.dockerignore'], 'root .dockerignore emitted when docker on')
+    }
+  },
+  {
     pkg: 'vp-react-ts-shadcn',
     options: { name: 'acme-web', scope: '@acme', base: 'base', preset: 'vega', iconLibrary: 'lucide', cssVariables: true, rtl: false, pointer: false, components: 'button,badge,card', install: true },
     expect(files) {

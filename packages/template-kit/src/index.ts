@@ -6,7 +6,9 @@ export type Tree = { [name: string]: string | Tree }
 
 // Files shipped with a leading underscore so `npm publish` doesn't mangle dotfiles.
 export const RENAME: Record<string, string> = {
-  _gitignore: '.gitignore'
+  _gitignore: '.gitignore',
+  _dockerignore: '.dockerignore',
+  '_env.example': '.env.example'
 }
 
 // shadcn's curated "radix-nova" theme (neutral base, yellow accent, Space Grotesk / Outfit,
